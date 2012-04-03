@@ -35,3 +35,27 @@ def current_stories():
             print iteration.start, iteration.finish
     return dict(stories)
 
+def duplicate_story(project_id, story_id):
+    tracker = _get_pivotal_tracker()
+    project = tracker.projects.get(project_id)
+    story = project.stories.get(story_id)
+    new = tracker.Story()
+    copy_fields = (
+        "name", "story_type", 
+        "requested_by", "owned_by", 
+        "description"
+    )
+    for field in copy_fields:
+        setattr(new, field, getattr(story, field))
+    new = project.stories.add(new)
+    new.add_note("duplicated from https://www.pivotaltracker.com/story/show/%r" % story_id)
+    # duplicate tasks
+    for task in story.tasks.all():
+        newtask = tracker.Task()
+        newtask.description = task.description
+        new.tasks.add(newtask)
+
+
+if __name__ == "__main__":
+    "tester"
+    duplicate_story(490731, 27490111)
