@@ -43,7 +43,9 @@ def duplicate_story(project_id, story_id):
     copy_fields = (
         "name", "story_type", 
         "requested_by", "owned_by", 
-        "description"
+        "description",
+        "labels",
+        "estimate"
     )
     for field in copy_fields:
         setattr(new, field, getattr(story, field))
