@@ -83,6 +83,12 @@ def duplicate_story(project_id, story_id):
         newtask.description = task.description
         new.tasks.add(newtask)
 
+def split_story(project_id, story_id):
+    """splits a story into two stories, one kept in current iteration 
+    and one scheduled for top of the backlog."""
+    # 1. duplicate_story
+    # 2. relocate duplicated story to top of backlog
+
 
 if __name__ == "__main__":
     "tester"
