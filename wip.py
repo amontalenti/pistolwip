@@ -23,17 +23,43 @@ def stories_by_user():
                 print "%s: #%s '%s'" % (initials, story.id, story.name)
     return dict(stories)
 
-def current_stories():
+def current_stories(project_name):
     """get current iteration stories"""
     tracker = _get_pivotal_tracker()
-    stories = defaultdict(dict)
+    for project in tracker.projects.all():
+        if project.name == project_name:
+            for story in stories_in_iteration(project.current_iteration_number):
+                yield story
+
+def stories_in_iteration(iteration_id):
+    tracker = _get_pivotal_tracker()
     for project in tracker.projects.all():
         for iteration in project.iterations.all():
-            # filter= parameter doesn't seem to work on iterations.all(), mismatch with
-            # documentation. However, we can determine latest iterations using start/finish
-            # TODO: fix pyvotal to support this
-            print iteration.start, iteration.finish
-    return dict(stories)
+            if iteration.id == iteration_id:
+                for story in iteration.stories:
+                    yield story
+
+def bulk_story_op(iteration_id, 
+                  story_action,     
+                  story_filter=lambda s: True, 
+                  edit=False):
+    """
+    bulk edit stories in a single iteration.
+    
+    story_filter is a function that returns True if story should be edited
+
+    story_action is a function that operates on each matched story
+
+    if edit is True, then story is also saved after each iteration; useful for
+    bulk edit operations where story_action chagnes the story
+    """
+    for story in stories_in_iteration(iteration_id):
+        if story_filter(story):
+            story_action(story)
+            if edit:
+                print "saving %r" % story.id
+                story.save()
+    return None
 
 def duplicate_story(project_id, story_id):
     tracker = _get_pivotal_tracker()
@@ -60,4 +86,7 @@ def duplicate_story(project_id, story_id):
 
 if __name__ == "__main__":
     "tester"
-    duplicate_story(490731, 27490111)
+    #duplicate_story(490731, 27490111)
+    #current_stories()
+    #for story in current_stories("Parse.ly"):
+    #    print story.id, story.name
